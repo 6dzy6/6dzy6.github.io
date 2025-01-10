@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    header {
+      border-bottom: solid 1px #777;
+    }
+    .options {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #title {
+      font-size: 1.5rem;
+    }
+    .title {
+      clear: both;
+      line-height: 60px;
+      text-align: center;
+      font-size: 1.5rem;
+      padding-top: 12px;
+    }
+    .title input {
+      outline: none;
+      border: none;
+      border-bottom: solid 1px black;
+      text-align: center;
+      width: 45%;
+      max-width: 600px;
+    }
+    .options input {
+      margin-right: 10px;
+    }
+    .title button {
+      font-size: 1.5rem;
+      margin-left: 10px;
+      border: none;
+      background: #444;
+      color: #eee;
+    }
+    main {
+      padding-bottom: 40px;
+    }
+    section {
+      text-indent: 3rem;
+      padding: 10px 0;
+    }
+    footer {
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+      background-color: white;
+    }
+    @media screen and (max-width: 480px) {
+      .title span {display: none;}
+      #title {font-size: 1.2rem;}
+      .title button {
+        font-size: 1.2rem;
+      }
+      section {text-indent: 2.4rem;}
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="options">
+      <div>
+        最小字数：
+        <input id="min" type="range" min="500" max="5000" value="2000">
+        <span>2000</span>
+      </div>
+      <div>
+        最大字数：
+        <input id="max" type="range" min="1000" max="10000" value="5000">
+        <span>5000</span>
+      </div>
+      <div class="title">
+        <span>标题：</span>
+        <input type="text" id="title" value="">
+        <button id="generate">生成</button>
+        <button id="anotherTitle">换</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <article></article>
+  </main>
+
+  <script type="module">
+    import { createRandomPicker } from './lib/random.js'
+    import { generate } from './lib/generator.js'
+
+    const titleEl = document.getElementById('title');
+    const generateBtn = document.getElementById('generate');
+    const anotherTitleBtn = document.getElementById('anotherTitle');
+    const config = {min: 2000, max: 5000};
+    const article = document.querySelector('article');// 自执行函数的前一行要打分号
+
+    (async function () {
+      // 获取到所有标题
+      const corpus = await (await fetch('./corpus/data.json')).json()//这个json是fetch自带的方法也是异步
+      const pickTitle = createRandomPicker(corpus.title)// 这是个函数可以用来切换标题
+      // 默认的标题
+      titleEl.value = pickTitle()
+
+      // 切换标题
+      anotherTitleBtn.addEventListener('click', () => {
+        titleEl.value = pickTitle()
+      })
+
+      // 生成文章
+      generateBtn.addEventListener('click', () => {
+        const text = generate(titleEl.value, {corpus, ...config})
+        article.innerHTML = `<section>${text.join('</section><section>')}</section>`
+      })
+    })()
+  </script>
+</body>
+</html>
